@@ -148,4 +148,4 @@ async function main() {
   // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
 }
 
-//client.login(token);
+client.login(token);
