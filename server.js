@@ -7,7 +7,7 @@ const app = express();
 const prefix = "!";
 const activitymsg = "helo";
 const devid = "139866356890861569";
-const token = "NzUzMDI0OTI3NDA5MzczMjg2.X1gLHQ._oYnq4jg2tXtLfdjXAfxLh4Sj_o";
+const token = "NzUzMDI0OTI3NDA5MzczMjg2.X1gLHQ.KvNhOWKZ5zffiqWk3smCPNS07uk";
 var mainguild;
 var mainguildid = "753004453077975080";
 
