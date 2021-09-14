@@ -4,10 +4,10 @@ const Discord = require("discord.js");
 const client = new Discord.Client();
 const app = express();
 
-const prefix = "?";
-const activitymsg = "#DiscordForCypress";
+const prefix = "!";
+const activitymsg = "helo";
 const devid = "139866356890861569";
-const token = "NzU1MTY3NTc1MTkyNjMzNTE1.X1_WnA.Vp8HaNjSdHYF85eaeq4J-9kHPD4";
+const token = "NzUzMDI0OTI3NDA5MzczMjg2.X1gLHQ._oYnq4jg2tXtLfdjXAfxLh4Sj_o";
 var mainguild;
 var mainguildid = "753004453077975080";
 
