@@ -29,6 +29,7 @@ function clean(text) {
 }
 
 function cmdEval(msg) {
+  const args = msg.content.split(" ").slice(1);
   if (msg.author.id === settings.botOwner) {
     try {
       const code = args.join(" ");
