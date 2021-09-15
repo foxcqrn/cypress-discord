@@ -37,9 +37,9 @@ function cmdEval(msg) {
       if (typeof evaled !== "string")
         evaled = require("util").inspect(evaled);
 
-      message.channel.send(clean(evaled), {code:"xl"});
+      msg.channel.send(clean(evaled), {code:"xl"});
     } catch (err) {
-      message.channel.send(`\`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
+      msg.channel.send(`\`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
     }
   } else {
     msg.reply(settings.error.noperm);
