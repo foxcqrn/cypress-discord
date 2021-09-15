@@ -25,6 +25,16 @@ const settings = {
   }
 };
 
+let transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false, // upgrade later with STARTTLS
+  auth: {
+    user: "cypressverify@gmail.com",
+    pass: "vssZCRWKXyZmW6",
+  },
+});
+
 app.use(express.static('public'));
 
 client.on('ready', async () => {
@@ -73,14 +83,24 @@ function discordTryToRunCmd(msg) {
 
 async function discordOnDm(msg) {
   try {
-    let email = msg.content;
     let guild = await client.guilds.cache.get(settings.guildid);
     let isVerified = await (await guild.members.fetch(msg.author.id)).roles.cache.has(settings.roles.verified);
     if (isVerified) return;
+    let email = msg.content;
+    let verifyNumber = Math.floor(1000 + (9999 - 1000) * Math.random());
     if (!email.endsWith('@santacruzcoe.org')) {
       msg.channel.send('Please reply with your school email to start the verification process.');
       return;
     }
+    console.log(email);
+    let info = await transporter.sendMail({
+      from: 'Cypress Discord Verification <cypressverify@gmail.com>', // sender address
+      to: email, // list of receivers
+      subject: 'Discord Account Verification', // Subject line
+      text: 'Your verification code is ' + verifyNumber, // plain text body
+      html: 'Your verification code is <b>' + verifyNumber + '</b>', // html body
+    });
+
   } catch (err) {
     console.log(err);
   }
