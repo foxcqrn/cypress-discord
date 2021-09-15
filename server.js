@@ -87,7 +87,7 @@ async function discordOnDm(msg) {
     let isVerified = await (await guild.members.fetch(msg.author.id)).roles.cache.has(settings.roles.verified);
     if (isVerified) return;
     let email = msg.content;
-    let verifyNumber = Math.floor(1000 + (9999 - 1000) * Math.random());
+    let verifyNumber = Math.floor(Math.random() * 999999);
     if (!email.endsWith('@santacruzcoe.org')) {
       msg.channel.send('Please reply with your school email to start the verification process.');
       return;
@@ -100,7 +100,8 @@ async function discordOnDm(msg) {
       text: 'Your verification code is ' + verifyNumber, // plain text body
       html: 'Your verification code is <b>' + verifyNumber + '</b>', // html body
     });
-
+    console.log(info);
+    msg.channel.send('I sent a code to `' + email + '`. Please reply with the code sent in order to gain access to the server.');
   } catch (err) {
     console.log(err);
   }
