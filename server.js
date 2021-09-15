@@ -1,7 +1,14 @@
-const express = require("express");
-const nodemailer = require("nodemailer");
-const Discord = require("discord.js");
-const client = new Discord.Client();
+const express = require('express');
+const nodemailer = require('nodemailer');
+const Discord = require('discord.js');
+const {Client, Intents} = require('discord.js');
+const client = new Discord.Client({
+  ws: {
+    intents: Intents.ALL,
+    properties: {'$os': 'iOS', '$browser': 'Discord iOS', '$device': ''}
+  },
+  partials: ['MESSAGE', 'CHANNEL', 'REACTION']
+});
 const app = express();
 
 const settings = {
@@ -9,41 +16,45 @@ const settings = {
   activity: 'helo',
   botOwner: '139866356890861569',
   token: 'NzUzMDI0OTI3NDA5MzczMjg2.X1gLHQ.NaCzyILEOvCQsPQ82LHIFwU1BvA',
-  error: {
+  guildid: '884926502951616572',
+  errors: {
     noperm: 'You do not have permission to run this command.'
+  },
+  roles: {
+    verified: '885057017276936262'
   }
 };
 
-app.use(express.static("public"));
+app.use(express.static('public'));
 
-client.on("ready", async () => {
+client.on('ready', async () => {
   console.log(`Logged in as ${client.user.tag}!`);
   client.user.setActivity(settings.activity);
 });
 
 function clean(text) {
-  if (typeof(text) === "string")
-    return text.replace(/`/g, "`" + String.fromCharCode(8203)).replace(/@/g, "@" + String.fromCharCode(8203));
+  if (typeof(text) === 'string')
+    return text.replace(/`/g, '`' + String.fromCharCode(8203)).replace(/@/g, '@' + String.fromCharCode(8203));
   else
-      return text;
+    return text;
 }
 
 function cmdEval(msg) {
-  const args = msg.content.split(" ").slice(1);
+  const args = msg.content.split(' ').slice(1);
   if (msg.author.id === settings.botOwner) {
     try {
-      const code = args.join(" ");
+      const code = args.join(' ');
       let evaled = eval(code);
 
-      if (typeof evaled !== "string")
-        evaled = require("util").inspect(evaled);
+      if (typeof evaled !== 'string')
+        evaled = require('util').inspect(evaled);
 
-      msg.channel.send(clean(evaled), {code:"xl"});
+      msg.channel.send(clean(evaled), {code:'js'});
     } catch (err) {
-      msg.channel.send(`\`ERROR\` \`\`\`xl\n${clean(err)}\n\`\`\``);
+      msg.channel.send(`\`ERROR\` \`\`\`\n${clean(err)}\n\`\`\``);
     }
   } else {
-    msg.reply(settings.error.noperm);
+    msg.reply(settings.errors.noperm);
   }
 }
 
@@ -60,8 +71,19 @@ function discordTryToRunCmd(msg) {
   return true;
 }
 
-function discordOnDm(msg) {
-  // body...
+async function discordOnDm(msg) {
+  try {
+    let email = msg.content;
+    let guild = await client.guilds.cache.get(settings.guildid);
+    let isVerified = await (await guild.members.fetch(msg.author.id)).roles.cache.has(settings.roles.verified);
+    if (isVerified) return;
+    if (!email.endsWith('@santacruzcoe.org')) {
+      msg.channel.send('Please reply with your school email to start the verification process.');
+      return;
+    }
+  } catch (err) {
+    console.log(err);
+  }
 }
 
 client.on('message', msg => {
@@ -70,14 +92,18 @@ client.on('message', msg => {
   if (discordTryToRunCmd(msg)) return;
 });
 
-async function main() {
+client.on('guildMemberAdd', member => {
+  member.send(`Welcome to the Cypress High School Discord server ${member.username}! Please reply with your school email to start the verification process.`);
+});
+
+/*async function main() {
   // Generate test SMTP service account from ethereal.email
   // Only needed if you don't have a real mail account for testing
   let testAccount = await nodemailer.createTestAccount();
 
   // create reusable transporter object using the default SMTP transport
   let transporter = nodemailer.createTransport({
-    host: "smtp.ethereal.email",
+    host: 'smtp.ethereal.email',
     port: 587,
     secure: false, // true for 465, false for other ports
     auth: {
@@ -88,19 +114,19 @@ async function main() {
 
   // send mail with defined transport object
   let info = await transporter.sendMail({
-    from: '"Cypress Discord Verification" <cypress-verification@2d4u.org>', // sender address
-    to: "dfox22@santacruzcoe.org", // list of receivers
-    subject: "Discord Account Verification", // Subject line
-    text: "Your verification code is 1234567.", // plain text body
-    html: "Your verification code is <b>1234567</b>.", // html body
+    from: ''Cypress Discord Verification' <cypress-verification@2d4u.org>', // sender address
+    to: 'dfox22@santacruzcoe.org', // list of receivers
+    subject: 'Discord Account Verification', // Subject line
+    text: 'Your verification code is 1234567.', // plain text body
+    html: 'Your verification code is <b>1234567</b>.', // html body
   });
 
-  console.log("Message sent: %s", info.messageId);
+  console.log('Message sent: %s', info.messageId);
   // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 
   // Preview only available when sending through an Ethereal account
-  console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+  console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
   // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
-}
+}*/
 
 client.login(settings.token);
