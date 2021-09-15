@@ -94,6 +94,7 @@ async function discordOnDm(msg) {
       msg.channel.send('Success! Your account is now verified. Welcome to the Cypress High School Discord server!');
       activeCodes.splice(activeCodes.findIndex(user => user.id === msg.author.id), 1);
       guildMember.roles.add(settings.roles.verified);
+      return;
     } else {
       msg.channel.send('Invalid verification code. Please reply with your school email to start the verification process.');
       activeCodes.splice(activeCodes.findIndex(user => user.id === msg.author.id), 1);
