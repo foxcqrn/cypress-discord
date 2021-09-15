@@ -1,4 +1,5 @@
 const express = require('express');
+const app = express();
 const nodemailer = require('nodemailer');
 const Discord = require('discord.js');
 const {Client, Intents} = require('discord.js');
@@ -9,7 +10,6 @@ const client = new Discord.Client({
   },
   partials: ['MESSAGE', 'CHANNEL', 'REACTION']
 });
-const app = express();
 
 const settings = {
   prefix: '!',
@@ -25,6 +25,7 @@ const settings = {
   }
 };
 
+let activeCodes = [];
 let transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
@@ -82,29 +83,47 @@ function discordTryToRunCmd(msg) {
 }
 
 async function discordOnDm(msg) {
-  try {
-    let guild = await client.guilds.cache.get(settings.guildid);
-    let isVerified = await (await guild.members.fetch(msg.author.id)).roles.cache.has(settings.roles.verified);
-    if (isVerified) return;
-    let email = msg.content;
-    let verifyNumber = Math.floor(Math.random() * 999999);
-    if (!email.endsWith('@santacruzcoe.org')) {
-      msg.channel.send('Please reply with your school email to start the verification process.');
-      return;
+  let guild = await client.guilds.cache.get(settings.guildid);
+  let guildMember = await guild.members.fetch(msg.author.id);
+  let isVerified = await guildMember.roles.cache.has(settings.roles.verified);
+  if (isVerified) return;
+  let email = msg.content;
+  let verifyNumber = Math.floor(Math.random() * 999999);
+  if (activeCodes.some(user => user.id === msg.author.id)) {
+    if (activeCodes.some(user => user.code === parseInt(msg.content))) {
+      msg.channel.send('Success! Your account is now verified. Welcome to the Cypress High School Discord server!');
+      activeCodes.splice(activeCodes.findIndex(user => user.id === msg.author.id), 1);
+      guildMember.roles.add(settings.roles.verified);
+    } else {
+      msg.channel.send('Invalid verification code. Please reply with your school email to start the verification process.');
+      activeCodes.splice(activeCodes.findIndex(user => user.id === msg.author.id), 1);
     }
-    console.log(email);
+  }
+  if (!email.endsWith('@santacruzcoe.org')) {
+    msg.channel.send('Please reply with your school email to start the verification process.');
+    return;
+  }
+  console.log('sending code to ' + email);
+  try {
     let info = await transporter.sendMail({
       from: 'Cypress Discord Verification <cypressverify@gmail.com>', // sender address
       to: email, // list of receivers
       subject: 'Discord Account Verification', // Subject line
-      text: 'Your verification code is ' + verifyNumber, // plain text body
-      html: 'Your verification code is <b>' + verifyNumber + '</b>', // html body
+      text: 'Hello! Your verification code is ' + verifyNumber + '. If you didn\'t request this code, please ignore this email.', // plain text body
+      html: 'Hello! Your verification code is <b>' + verifyNumber + '</b>. If you didn\'t request this code, please ignore this email.', // html body
     });
-    console.log(info);
+    activeCodes.push({
+      email: email,
+      code: verifyNumber,
+      id: msg.author.id
+    });
+    console.log(info, activeCodes);
     msg.channel.send('I sent a code to `' + email + '`. Please reply with the code sent in order to gain access to the server.');
   } catch (err) {
+    msg.channel.send('I couldn\'t send an email to the address given. ```' + err + '```');
     console.log(err);
-  }
+    return;
+  }  
 }
 
 client.on('message', msg => {
@@ -114,40 +133,7 @@ client.on('message', msg => {
 });
 
 client.on('guildMemberAdd', member => {
-  member.send(`Welcome to the Cypress High School Discord server ${member.username}! Please reply with your school email to start the verification process.`);
+  member.send(`Welcome to the Cypress High School Discord server ${member.user.username}! Please reply with your school email to start the verification process.`);
 });
-
-/*async function main() {
-  // Generate test SMTP service account from ethereal.email
-  // Only needed if you don't have a real mail account for testing
-  let testAccount = await nodemailer.createTestAccount();
-
-  // create reusable transporter object using the default SMTP transport
-  let transporter = nodemailer.createTransport({
-    host: 'smtp.ethereal.email',
-    port: 587,
-    secure: false, // true for 465, false for other ports
-    auth: {
-      user: testAccount.user, // generated ethereal user
-      pass: testAccount.pass, // generated ethereal password
-    },
-  });
-
-  // send mail with defined transport object
-  let info = await transporter.sendMail({
-    from: ''Cypress Discord Verification' <cypress-verification@2d4u.org>', // sender address
-    to: 'dfox22@santacruzcoe.org', // list of receivers
-    subject: 'Discord Account Verification', // Subject line
-    text: 'Your verification code is 1234567.', // plain text body
-    html: 'Your verification code is <b>1234567</b>.', // html body
-  });
-
-  console.log('Message sent: %s', info.messageId);
-  // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
-
-  // Preview only available when sending through an Ethereal account
-  console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
-  // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
-}*/
 
 client.login(settings.token);
