@@ -62,7 +62,8 @@ function cmdEval(msg) {
       if (typeof evaled !== 'string')
         evaled = require('util').inspect(evaled);
 
-      msg.channel.send(clean(evaled), {code : 'js'}).catch(console.error);
+      msg.channel.send(`\`\`\`js\n${clean(evaled)}\n\`\`\``)
+          .catch(console.error);
     } catch (err) {
       msg.channel.send(`\`ERROR\` \`\`\`\n${clean(err)}\n\`\`\``)
           .catch(console.error);
