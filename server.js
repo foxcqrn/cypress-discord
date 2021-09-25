@@ -20,7 +20,6 @@ const settings = {
   prefix : '!',
   activity : 'helo',
   botOwner : '139866356890861569',
-  token : 'NzUzMDI0OTI3NDA5MzczMjg2.X1gLHQ.NaCzyILEOvCQsPQ82LHIFwU1BvA',
   guildid : '884926502951616572',
   errors : {noperm : 'You do not have permission to run this command.'},
   roles : {verified : '885057017276936262'}
@@ -32,8 +31,8 @@ let transporter = nodemailer.createTransport({
   port : 587,
   secure : false, // upgrade later with STARTTLS
   auth : {
-    user : "cypressverify@gmail.com",
-    pass : "vssZCRWKXyZmW6",
+    user : process.env.EMAIL_USER,
+    pass : process.env.PASSWORD,
   },
 });
 
@@ -159,4 +158,4 @@ client.on('guildMemberAdd', member => {
           .username}! Please reply with your school email to start the verification process.`);
 });
 
-client.login(settings.token);
+client.login(process.env.TOKEN);
