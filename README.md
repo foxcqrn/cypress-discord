@@ -1,2 +1,2 @@
 # cypress-discord
-bot for cypress discord server
+email verification discord bot
